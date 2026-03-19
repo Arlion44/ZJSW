@@ -112,14 +112,14 @@ def login_page():
             try:
                 # 使用云端图片直链 (GitHub Raw 或 Supabase Public URL)
                 # !!!重要：请将下方占位符URL替换为您实际上传后获取到的图片链接!!!
-                logo_url = "https://placeholder.com/path/to/your/cloud/logo.png"
+                logo_url = "https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/28827220.png"
                 st.image(logo_url, width=150) # 使用 width 显式控制大小并居中
             except Exception:
                 # 容错：如果链接不可用，显示文字提示或空白
                 st.warning("🔄 正在加载 Logo 或 Logo 链接不可用...")
 
         # ---- 登录标题 (应用CSS类) ----
-        st.markdown("<div class='login-title'>中佳生物<br>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
+        st.markdown("<div class='login-title'>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
         
         # ---- 登录表单 ----
         with st.form("login_form"):
@@ -325,4 +325,39 @@ def inventory_and_alert_module():
                     save_data(upload_df, INV_FILE)
                     st.success("✅ 导入成功！界面将自动刷新。")
                     st.rerun()
-                except Exception as e
+                except Exception as e:
+                    st.error(f"导入失败，请检查文件格式是否正确。错误信息：{e}")
+    else:
+        st.info("当前总库存为空，暂无数据展示。")
+
+# ==========================================
+# --- 应用程序主控制流 ---
+# ==========================================
+if __name__ == "__main__":
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
+    
+    if not st.session_state.logged_in:
+        login_page()
+    else:
+        st.sidebar.title("中佳生物系统菜单")
+        st.sidebar.markdown(f"**操作员:** {st.session_state.user_info['name']} ({st.session_state.user_info['role']})")
+        
+        menu = st.sidebar.radio(
+            "选择系统模块",
+            ["模块一：采购登记入库", "模块二：领取出库登记", "模块三：库存清单与提醒"]
+        )
+        
+        st.sidebar.divider()
+        if st.sidebar.button("🚪 退出登录"):
+            st.session_state.logged_in = False
+            st.session_state.username = None
+            st.session_state.user_info = None
+            st.rerun()
+            
+        if menu == "模块一：采购登记入库":
+            inbound_module()
+        elif menu == "模块二：领取出库登记":
+            outbound_module()
+        elif menu == "模块三：库存清单与提醒":
+            inventory_and_alert_module()
