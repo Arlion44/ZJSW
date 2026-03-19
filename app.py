@@ -112,7 +112,7 @@ def login_page():
                 st.error("未找到 28827220.png，请检查图片路径")
 
         # ---- 登录标题 ----
-        st.markdown("<div class='login-title'>中佳生物<br>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
+        st.markdown("<div class='login-title'>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
         
         # ---- 登录表单 ----
         with st.form("login_form"):
