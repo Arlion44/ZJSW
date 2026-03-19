@@ -68,9 +68,13 @@ def login_page():
     # 注入CSS美化登录界面
     st.markdown("""
         <style>
-        /* 1. 设置全屏背景为天蓝色 */
+        /* 1. 设置全屏背景为图片 */
         .stApp {
-            background-color: #F0FFFF !important;
+            background-image: url("https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/56211398.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
         }
         /* 2. 标题美化：居中，白色字体，强制同行，黑色立体阴影 */
         .login-title {
