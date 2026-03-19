@@ -72,58 +72,54 @@ def login_page():
         .stApp {
             background-color: #87CEEB !important; 
         }
-        /* 2. 标题居中，白色字体，添加黑色立体阴影 */
+        /* 2. 标题美化：居中，白色字体，强制同行，黑色立体阴影 */
         .login-title {
             color: white !important;
             text-align: center;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: bold;
             margin-bottom: 30px;
             margin-top: 15px;
-            /* 增加立体感的阴影 */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+            white-space: nowrap; /* 核心修改：强制文本在同一行显示 */
+            text-shadow: 2px 3px 6px rgba(0, 0, 0, 0.4); /* 优化阴影显得更自然 */
         }
-        /* 3. 用户名和密码标签左对齐 */
+        /* 3. 用户名和密码标签左对齐并加粗 */
         .stTextInput label {
             display: flex;
-            justify-content: flex-start; /* 显式设置为左对齐 */
+            justify-content: flex-start; 
             font-size: 1.1rem;
-            color: #333; /* 登录框内文字颜色加深，提高可读性 */
+            color: #333; 
+            font-weight: bold;
         }
-        /* 4. 登录框（表单）样式：半透明白底、圆角、阴影 */
+        /* 4. 登录框（表单）美化：纯白背景、明显圆角、高级悬浮阴影 */
         [data-testid="stForm"] {
-            background-color: rgba(255, 255, 255, 0.85); /* 提高不透明度，确保输入框清晰 */
-            border-radius: 15px;
+            background-color: #ffffff !important; /* 核心修改：改为不透明纯白，极大提升区分度 */
+            border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.2); /* 增加悬浮阴影的立体感 */
             border: none;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # 通过 [左, 中, 右] 三列布局，控制中间登录框的“宽度适中”并且“整体居中”
-    col1, col2, col3 = st.columns([1, 1.2, 1])
-    
-    with col2:
-        # ---- Logo置于标题之上 ----
-        # 再次嵌套列来控制Logo的宽度
-        logo_col1, logo_col2, logo_col3 = st.columns([1, 1.5, 1])
-        with logo_col2:
-            try:
-                # 使用云端图片直链 (GitHub Raw 或 Supabase Public URL)
-                # !!!重要：请将下方占位符URL替换为您实际上传后获取到的图片链接!!!
-                logo_url = "https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/28827220.png"
-                st.image(logo_url, width=150) # 使用 width 显式控制大小并居中
-            except Exception:
-                # 容错：如果链接不可用，显示文字提示或空白
-                st.warning("🔄 正在加载 Logo 或 Logo 链接不可用...")
+    # === 第一部分：Logo与标题 ===
+    # 给标题分配更宽的空间（比例 1:4:1），彻底摆脱登录框的宽度限制
+    header_col1, header_col2, header_col3 = st.columns([1, 4, 1])
+    with header_col2:
+        logo_url = "https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/28827220.png"
+        # 使用 HTML 统一渲染图片和标题，确保绝对居中且不换行
+        st.markdown(f"""
+            <div style="text-align: center; margin-top: 2rem;">
+                <img src="{logo_url}" width="160" style="margin-bottom: 10px; drop-shadow(0px 4px 6px rgba(0,0,0,0.2));" />
+                <div class='login-title'>实验试剂耗材及设备管理系统</div>
+            </div>
+        """, unsafe_allow_html=True)
 
-        # ---- 登录标题 (应用CSS类) ----
-        st.markdown("<div class='login-title'>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
-        
-        # ---- 登录表单 ----
+    # === 第二部分：纯白高对比度登录框 ===
+    # 保持登录框宽度适中且居中（比例 1:1.2:1）
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
         with st.form("login_form"):
-            # 删除了括号及提示文字
             username = st.text_input("用户名")
             password = st.text_input("密码", type="password")
             
