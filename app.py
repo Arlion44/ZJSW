@@ -65,21 +65,77 @@ USERS = {
 }
 
 def login_page():
-    st.title("🧪 中佳生物 - 实验试剂耗材及设备管理系统")
-    with st.form("login_form"):
-        username = st.text_input("用户名 (如 admin, rd1, rd2, rd3)")
-        password = st.text_input("密码 (默认123)", type="password")
-        submit = st.form_submit_button("登录系统")
+    # 注入CSS美化登录界面
+    st.markdown("""
+        <style>
+        /* 1. 设置全屏背景为嫩绿色 */
+        .stApp {
+            background-color: #E8F5E9 !important; 
+        }
+        /* 2. 标题居中并设置为天蓝色 */
+        .login-title {
+            color: #87CEEB !important;
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+        /* 3. 居中输入框上方的标签文字 (用户名/密码) */
+        .stTextInput label {
+            display: flex;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        /* 4. 给表单加个半透明白底和圆角，让页面更有层次感 */
+        [data-testid="stForm"] {
+            background-color: rgba(255, 255, 255, 0.65);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: none;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # 通过 [左, 中, 右] 三列布局，控制中间登录框的“宽度适中”并且“整体居中”
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    
+    with col2:
+        # ---- Logo置于标题之上 ----
+        # 再次嵌套列来控制Logo的宽度不要撑满整个登录框
+        logo_col1, logo_col2, logo_col3 = st.columns([1, 1.5, 1])
+        with logo_col2:
+            try:
+                st.image("28827220.png", use_container_width=True)
+            except Exception:
+                st.error("未找到 28827220.png，请检查图片路径")
+
+        # ---- 登录标题 ----
+        st.markdown("<div class='login-title'>中佳生物<br>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
         
-        if submit:
-            if username in USERS and USERS[username]["password"] == password:
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.session_state.user_info = USERS[username]
-                st.success(f"登录成功！欢迎，{USERS[username]['name']}")
-                st.rerun()
-            else:
-                st.error("用户名或密码错误！")
+        # ---- 登录表单 ----
+        with st.form("login_form"):
+            # 删除了括号及括号内的内容
+            username = st.text_input("用户名")
+            password = st.text_input("密码", type="password")
+            
+            st.write("") # 留出少许间距
+            
+            # 使用列布局使“登录”按钮完美居中
+            btn_col1, btn_col2, btn_col3 = st.columns([1, 1.2, 1])
+            with btn_col2:
+                submit = st.form_submit_button("登录系统", use_container_width=True)
+            
+            if submit:
+                if username in USERS and USERS[username]["password"] == password:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.session_state.user_info = USERS[username]
+                    st.success(f"登录成功！欢迎，{USERS[username]['name']}")
+                    st.rerun()
+                else:
+                    st.error("用户名或密码错误！")
 
 # ==========================================
 # --- 模块1：采购登记入库 ---
@@ -124,10 +180,8 @@ def inbound_module():
                 save_data(inbound_df, INBOUND_FILE)
                 
                 # 2. 更新总库存
-                # 依靠“名称+品牌货号”作为唯一标识
                 mask = (inv_df["物品名称"] == item_name) & (inv_df["品牌及货号"] == brand_cat)
                 if inv_df[mask].empty:
-                    # 新物品，添加新行
                     new_inv = {
                         "项目分类": category,
                         "物品名称": item_name,
@@ -139,7 +193,6 @@ def inbound_module():
                     }
                     inv_df = pd.concat([inv_df, pd.DataFrame([new_inv])], ignore_index=True)
                 else:
-                    # 老物品，增加数量，更新存放地址和时间
                     idx = inv_df[mask].index[0]
                     inv_df.at[idx, "当前库存数量"] += quantity
                     inv_df.at[idx, "存放地址"] = location
@@ -162,7 +215,6 @@ def outbound_module():
         st.info("当前库存为空，无法进行出库操作。请先进入模块一进行入库。")
         return
         
-    # 将现有库存项合并为一个下拉列表选项
     inv_df["显示名称"] = inv_df["项目分类"] + " - " + inv_df["物品名称"] + " (" + inv_df["品牌及货号"] + ")" + " | 当前余量: " + inv_df["当前库存数量"].astype(str)
     item_options = inv_df["显示名称"].tolist()
     
@@ -178,17 +230,13 @@ def outbound_module():
             if selected_item == "请选择...":
                 st.warning("⚠️ 请先选择要领取的物品！")
             else:
-                # 解析出真正的名称和货号
-                # 这里假设物品名称和品牌货号中没有用到连字符"-"和括号"()"组合
                 selected_idx = item_options.index(selected_item)
                 target_row = inv_df.iloc[selected_idx]
-                
                 current_qty = target_row["当前库存数量"]
                 
                 if withdraw_qty > current_qty:
                     st.error(f"❌ 库存不足！当前仅剩余 {current_qty}，无法领取 {withdraw_qty}。")
                 else:
-                    # 1. 记录出库流水
                     new_outbound = {
                         "出库单号": f"OUT-{datetime.now().strftime('%Y%m%d%H%M%S')}",
                         "项目分类": target_row["项目分类"],
@@ -202,11 +250,9 @@ def outbound_module():
                     outbound_df = pd.concat([outbound_df, pd.DataFrame([new_outbound])], ignore_index=True)
                     save_data(outbound_df, OUTBOUND_FILE)
                     
-                    # 2. 扣减总库存
                     inv_df.at[selected_idx, "当前库存数量"] -= withdraw_qty
                     inv_df.at[selected_idx, "最近更新时间"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     
-                    # 清理辅助显示的列再保存
                     save_inv_df = inv_df.drop(columns=["显示名称"])
                     save_data(save_inv_df, INV_FILE)
                     
@@ -220,9 +266,7 @@ def inventory_and_alert_module():
     
     inv_df = load_data(INV_FILE)
     
-    # 1. 警戒公告板
     if not inv_df.empty:
-        # 筛选当前数量低于警戒阈值的物品
         alert_df = inv_df[inv_df["当前库存数量"] <= inv_df["警戒阈值"]]
         if not alert_df.empty:
             st.error("🚨 **库存告警公告板 (以下物资即将耗尽，请尽快采购！)**")
@@ -233,7 +277,6 @@ def inventory_and_alert_module():
     
     st.divider()
     
-    # 2. 总量清单展示与编辑
     st.subheader("📦 当前试剂耗材库存总量清单")
     st.markdown("您可以直接在此表格中快速修改**警戒阈值**或**存放地址**（修改后点击保存）。总数量与出入库自动关联。")
     
@@ -258,8 +301,7 @@ def inventory_and_alert_module():
             st.success("清单信息已更新！")
             st.rerun()
             
-        # 下载清单功能
-        csv = edited_df.to_csv(index=False).encode('utf-8-sig') # utf-8-sig 防止 Excel 乱码
+        csv = edited_df.to_csv(index=False).encode('utf-8-sig') 
         st.download_button(
             label="⬇️ 下载库存总清单 (CSV格式，可用Excel打开)",
             data=csv,
@@ -267,7 +309,6 @@ def inventory_and_alert_module():
             mime='text/csv',
         )
         
-        # 上传清单功能 (简单覆盖)
         st.divider()
         st.subheader("⬆️ 上传初始化/覆盖库存清单")
         st.markdown("⚠️ **注意**：上传的CSV文件表头必须包含：`项目分类,物品名称,品牌及货号,当前库存数量,警戒阈值,存放地址,最近更新时间`。上传将**直接覆盖**现有总库存！")
@@ -294,7 +335,6 @@ if __name__ == "__main__":
     if not st.session_state.logged_in:
         login_page()
     else:
-        # 侧边栏导航
         st.sidebar.title("中佳生物系统菜单")
         st.sidebar.markdown(f"**操作员:** {st.session_state.user_info['name']} ({st.session_state.user_info['role']})")
         
@@ -310,7 +350,6 @@ if __name__ == "__main__":
             st.session_state.user_info = None
             st.rerun()
             
-        # 路由
         if menu == "模块一：采购登记入库":
             inbound_module()
         elif menu == "模块二：领取出库登记":
