@@ -102,14 +102,15 @@ def login_page():
     col1, col2, col3 = st.columns([1, 1.2, 1])
     
     with col2:
-        # ---- Logo置于标题之上 ----
-        # 再次嵌套列来控制Logo的宽度不要撑满整个登录框
+       # ---- Logo置于标题之上 ----
         logo_col1, logo_col2, logo_col3 = st.columns([1, 1.5, 1])
         with logo_col2:
             try:
-                st.image("28827220.png", use_container_width=True)
+                # 将下面这行的 URL 替换为你刚从 Supabase 复制的链接
+                logo_url = "https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/28827220.png" 
+                st.image(logo_url, use_container_width=True)
             except Exception:
-                st.error("未找到 28827220.png，请检查图片路径")
+                st.error("无法加载云端 Logo，请检查网络或图片链接")
 
         # ---- 登录标题 ----
         st.markdown("<div class='login-title'>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
