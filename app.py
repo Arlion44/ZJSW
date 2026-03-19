@@ -76,17 +76,24 @@ def login_page():
             background-repeat: no-repeat;
             background-attachment: fixed;
         }
-        /* 2. 标题美化：居中，白色字体，强制同行，黑色立体阴影 */
+        
+        /* 🔥 新增：强制将顶部的 Streamlit 默认页眉背景设为透明，解决顶部不覆盖问题 🔥 */
+        [data-testid="stHeader"] {
+            background-color: transparent !important;
+        }
+
+        /* 2. 标题美化：居中，正蓝色字体，强制同行，浅色立体阴影衬托 */
         .login-title {
-            color: white !important;
+            color: #0000FF !important; /* 核心修改：正蓝色 */
             text-align: center;
             font-size: 2.8rem;
             font-weight: bold;
             margin-bottom: 30px;
             margin-top: 15px;
-            white-space: nowrap; /* 核心修改：强制文本在同一行显示 */
-            text-shadow: 2px 3px 6px rgba(0, 0, 0, 0.4); /* 优化阴影显得更自然 */
+            white-space: nowrap; 
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8); /* 字体变深后，阴影改浅色以突显字体 */
         }
+        
         /* 3. 用户名和密码标签左对齐并加粗 */
         .stTextInput label {
             display: flex;
@@ -95,12 +102,13 @@ def login_page():
             color: #333; 
             font-weight: bold;
         }
-        /* 4. 登录框（表单）美化：纯白背景、明显圆角、高级悬浮阴影 */
+        
+        /* 4. 登录框（表单）美化：纯白背景、明显圆角、明显黑色悬浮阴影 */
         [data-testid="stForm"] {
-            background-color: #ffffff !important; /* 核心修改：改为不透明纯白，极大提升区分度 */
+            background-color: #ffffff !important; 
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.2); /* 增加悬浮阴影的立体感 */
+            box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.6); /* 核心修改：加深黑色阴影，使边框明显 */
             border: none;
         }
         </style>
