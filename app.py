@@ -42,7 +42,7 @@ def load_data(filename):
     # 核心修复：将所有的空值(NaN)替换为空字符串
     df = df.fillna("") 
     
-    # 防御性编程：强制把不是数量的列都转成纯文本类型，彻底杜绝类型冲突
+    # 防御性编程：强制把不是数量的列都转成纯文本类型
     for col in df.columns:
         if col not in ["当前库存数量", "警戒阈值", "入库数量", "领取数量"]:
             df[col] = df[col].astype(str)
@@ -68,31 +68,34 @@ def login_page():
     # 注入CSS美化登录界面
     st.markdown("""
         <style>
-        /* 1. 设置全屏背景为嫩绿色 */
+        /* 1. 设置全屏背景为天蓝色 */
         .stApp {
-            background-color: #E8F5E9 !important; 
+            background-color: #87CEEB !important; 
         }
-        /* 2. 标题居中并设置为天蓝色 */
+        /* 2. 标题居中，白色字体，添加黑色立体阴影 */
         .login-title {
-            color: #87CEEB !important;
+            color: white !important;
             text-align: center;
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             margin-top: 15px;
+            /* 增加立体感的阴影 */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
         }
-        /* 3. 居中输入框上方的标签文字 (用户名/密码) */
+        /* 3. 用户名和密码标签左对齐 */
         .stTextInput label {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start; /* 显式设置为左对齐 */
             font-size: 1.1rem;
+            color: #333; /* 登录框内文字颜色加深，提高可读性 */
         }
-        /* 4. 给表单加个半透明白底和圆角，让页面更有层次感 */
+        /* 4. 登录框（表单）样式：半透明白底、圆角、阴影 */
         [data-testid="stForm"] {
-            background-color: rgba(255, 255, 255, 0.65);
+            background-color: rgba(255, 255, 255, 0.85); /* 提高不透明度，确保输入框清晰 */
             border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             border: none;
         }
         </style>
@@ -102,22 +105,25 @@ def login_page():
     col1, col2, col3 = st.columns([1, 1.2, 1])
     
     with col2:
-       # ---- Logo置于标题之上 ----
+        # ---- Logo置于标题之上 ----
+        # 再次嵌套列来控制Logo的宽度
         logo_col1, logo_col2, logo_col3 = st.columns([1, 1.5, 1])
         with logo_col2:
             try:
-                # 将下面这行的 URL 替换为你刚从 Supabase 复制的链接
-                logo_url = "https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/28827220.png" 
-                st.image(logo_url, use_container_width=True)
+                # 使用云端图片直链 (GitHub Raw 或 Supabase Public URL)
+                # !!!重要：请将下方占位符URL替换为您实际上传后获取到的图片链接!!!
+                logo_url = "https://placeholder.com/path/to/your/cloud/logo.png"
+                st.image(logo_url, width=150) # 使用 width 显式控制大小并居中
             except Exception:
-                st.error("无法加载云端 Logo，请检查网络或图片链接")
+                # 容错：如果链接不可用，显示文字提示或空白
+                st.warning("🔄 正在加载 Logo 或 Logo 链接不可用...")
 
-        # ---- 登录标题 ----
-        st.markdown("<div class='login-title'>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
+        # ---- 登录标题 (应用CSS类) ----
+        st.markdown("<div class='login-title'>中佳生物<br>实验试剂耗材及设备管理系统</div>", unsafe_allow_html=True)
         
         # ---- 登录表单 ----
         with st.form("login_form"):
-            # 删除了括号及括号内的内容
+            # 删除了括号及提示文字
             username = st.text_input("用户名")
             password = st.text_input("密码", type="password")
             
@@ -166,7 +172,6 @@ def inbound_module():
             if not item_name or not brand_cat:
                 st.warning("⚠️ 物品名称和品牌货号不能为空！")
             else:
-                # 1. 记录入库流水
                 new_inbound = {
                     "入库单号": f"IN-{datetime.now().strftime('%Y%m%d%H%M%S')}",
                     "项目分类": category,
@@ -180,7 +185,6 @@ def inbound_module():
                 inbound_df = pd.concat([inbound_df, pd.DataFrame([new_inbound])], ignore_index=True)
                 save_data(inbound_df, INBOUND_FILE)
                 
-                # 2. 更新总库存
                 mask = (inv_df["物品名称"] == item_name) & (inv_df["品牌及货号"] == brand_cat)
                 if inv_df[mask].empty:
                     new_inv = {
@@ -321,39 +325,4 @@ def inventory_and_alert_module():
                     save_data(upload_df, INV_FILE)
                     st.success("✅ 导入成功！界面将自动刷新。")
                     st.rerun()
-                except Exception as e:
-                    st.error(f"导入失败，请检查文件格式是否正确。错误信息：{e}")
-    else:
-        st.info("当前总库存为空，暂无数据展示。")
-
-# ==========================================
-# --- 应用程序主控制流 ---
-# ==========================================
-if __name__ == "__main__":
-    if 'logged_in' not in st.session_state:
-        st.session_state.logged_in = False
-    
-    if not st.session_state.logged_in:
-        login_page()
-    else:
-        st.sidebar.title("中佳生物系统菜单")
-        st.sidebar.markdown(f"**操作员:** {st.session_state.user_info['name']} ({st.session_state.user_info['role']})")
-        
-        menu = st.sidebar.radio(
-            "选择系统模块",
-            ["模块一：采购登记入库", "模块二：领取出库登记", "模块三：库存清单与提醒"]
-        )
-        
-        st.sidebar.divider()
-        if st.sidebar.button("🚪 退出登录"):
-            st.session_state.logged_in = False
-            st.session_state.username = None
-            st.session_state.user_info = None
-            st.rerun()
-            
-        if menu == "模块一：采购登记入库":
-            inbound_module()
-        elif menu == "模块二：领取出库登记":
-            outbound_module()
-        elif menu == "模块三：库存清单与提醒":
-            inventory_and_alert_module()
+                except Exception as e
