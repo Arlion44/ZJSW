@@ -77,21 +77,21 @@ def login_page():
             background-attachment: fixed;
         }
         
-        /* 🔥 新增：强制将顶部的 Streamlit 默认页眉背景设为透明，解决顶部不覆盖问题 🔥 */
+        /* 🔥 将顶部的 Streamlit 默认页眉背景设为透明，解决顶部不覆盖问题 🔥 */
         [data-testid="stHeader"] {
             background-color: transparent !important;
         }
 
         /* 2. 标题美化：居中，正蓝色字体，强制同行，浅色立体阴影衬托 */
         .login-title {
-            color: #0000FF !important; /* 核心修改：正蓝色 */
+            color: #0000FF !important; 
             text-align: center;
             font-size: 2.8rem;
             font-weight: bold;
             margin-bottom: 30px;
             margin-top: 15px;
             white-space: nowrap; 
-            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8); /* 字体变深后，阴影改浅色以突显字体 */
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8); 
         }
         
         /* 3. 用户名和密码标签左对齐并加粗 */
@@ -103,13 +103,51 @@ def login_page():
             font-weight: bold;
         }
         
-        /* 4. 登录框（表单）美化：纯白背景、明显圆角、明显黑色悬浮阴影 */
+        /* 4. 登录框（表单）美化：50%透明背景、毛玻璃效果、圆角、明显黑色悬浮阴影 */
         [data-testid="stForm"] {
-            background-color: #ffffff !important; 
+            background-color: rgba(255, 255, 255, 0.5) !important; 
+            backdrop-filter: blur(8px); /* 毛玻璃模糊滤镜 */
+            -webkit-backdrop-filter: blur(8px); /* 兼容苹果 Safari */
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.6); /* 核心修改：加深黑色阴影，使边框明显 */
-            border: none;
+            box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.6); /* 保持明显的黑色悬浮阴影 */
+            border: 1px solid rgba(255, 255, 255, 0.4); /* 增强玻璃质感的淡白边 */
+        }
+        
+        /* 🔥 5. 新增：按钮立体美化 & 颜色协调（蓝宝石色渐变） 🔥 */
+        div[data-testid="stFormSubmitButton"] > button {
+            /* 协调色：深蓝色渐变 */
+            background-image: linear-gradient(180deg, #1E88E5 0%, #1565C0 100%) !important;
+            color: white !important;
+            
+            /* 立体感边框：顶部浅、底部深 */
+            border: 1px solid #0D47A1 !important;
+            border-top: 1px solid #64B5F6 !important;
+            border-radius: 12px !important; /* 圆角配合登录框 */
+            
+            font-weight: bold !important;
+            font-size: 1.1rem !important;
+            padding: 10px 24px !important;
+            
+            /* 🔥 核心立体阴影：Y轴下移 5px 的暗蓝色阴影营造厚度 🔥 */
+            box-shadow: 0 5px 0 #0D47A1, 0 8px 15px rgba(0, 0, 0, 0.3) !important;
+            
+            /* 丝滑过渡反馈 */
+            transition: all 0.1s ease !important;
+            cursor: pointer !important;
+        }
+        
+        /* 按钮鼠标悬停反馈：稍微变亮 */
+        div[data-testid="stFormSubmitButton"] > button:hover {
+            background-image: linear-gradient(180deg, #42A5F5 0%, #1976D2 100%) !important;
+        }
+        
+        /* 🔥 按钮点击/按下反馈：核心立体下沉效果 🔥 */
+        div[data-testid="stFormSubmitButton"] > button:active {
+            /* 缩短阴影营造被按下的视觉 */
+            box-shadow: 0 2px 0 #0D47A1, 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+            /* 按钮整体垂直下移，模拟物理下沉 */
+            transform: translateY(3px) !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -127,7 +165,7 @@ def login_page():
             </div>
         """, unsafe_allow_html=True)
 
-    # === 第二部分：纯白高对比度登录框 ===
+    # === 第二部分：半透明高对比度登录框 ===
     # 保持登录框宽度适中且居中（比例 1:1.2:1）
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
@@ -140,6 +178,7 @@ def login_page():
             # 使用列布局使“登录”按钮完美居中
             btn_col1, btn_col2, btn_col3 = st.columns([1, 1.2, 1])
             with btn_col2:
+                # use_container_width=True 让按钮铺满这一列
                 submit = st.form_submit_button("登录系统", use_container_width=True)
             
             if submit:
