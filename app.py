@@ -70,7 +70,7 @@ def login_page():
         <style>
         /* 1. 设置全屏背景为天蓝色 */
         .stApp {
-            background-color: #87CEEB !important; 
+            background-color: #F0FFFF !important;
         }
         /* 2. 标题美化：居中，白色字体，强制同行，黑色立体阴影 */
         .login-title {
