@@ -6,6 +6,7 @@ from datetime import date, datetime
 # ==========================================
 # --- 系统配置与初始化 ---
 # ==========================================
+# 必须是 Streamlit 命令的第一个调用
 st.set_page_config(page_title="中佳生物研发部物料管理", layout="wide")
 
 # 定义数据文件路径（将自动生成在代码同级目录）
@@ -37,26 +38,33 @@ init_files()
 
 # 读取数据
 def load_data(filename):
+    if not os.path.exists(filename):
+        init_files()
     df = pd.read_csv(filename, encoding='utf-8-sig')
     
     # 核心修复：将所有的空值(NaN)替换为空字符串
     df = df.fillna("") 
     
     # 防御性编程：强制把不是数量的列都转成纯文本类型
+    numeric_cols = ["当前库存数量", "警戒阈值", "入库数量", "领取数量"]
     for col in df.columns:
-        if col not in ["当前库存数量", "警戒阈值", "入库数量", "领取数量"]:
+        if col not in numeric_cols:
             df[col] = df[col].astype(str)
+        else:
+            # 确保数字列是数字类型
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
             
     return df
 
 # 保存数据
 def save_data(df, filename):
-    df.to_csv(filename, index=False)
+    df.to_csv(filename, index=False, encoding='utf-8-sig')
 
 # ==========================================
 # --- 用户鉴权模块 ---
 # ==========================================
 # 1个管理员账号，3个研发人员账号
+# 实际生产中请使用更安全的方式存储密码（如哈希）
 USERS = {
     "admin": {"password": "123", "role": "管理员", "name": "管理员"},
     "rd1": {"password": "123", "role": "研发人员", "name": "研发人员A"},
@@ -77,24 +85,25 @@ def login_page():
             background-attachment: fixed;
         }
         
-        /* 🔥 将顶部的 Streamlit 默认页眉背景设为透明，解决顶部不覆盖问题 🔥 */
+        /* 2. 将顶部的 Streamlit 默认页眉背景设为透明，解决顶部不覆盖问题 */
         [data-testid="stHeader"] {
             background-color: transparent !important;
         }
 
-        /* 2. 标题美化：居中，正蓝色字体，强制同行，浅色立体阴影衬托 */
+        /* 3. 标题美化：居中，正蓝色字体，强制同行，浅色立体阴影衬托 */
+        /* 修改：字体大小改为 72px (约 4.5rem)，增加 margin-top 以配合 logo 间隔 */
         .login-title {
             color: #0000FF !important; 
             text-align: center;
-            font-size: 2.8rem;
+            font-size: 72px; /* 标题字体改为 72px */
             font-weight: bold;
-            margin-bottom: 30px;
-            margin-top: 15px;
+            margin-bottom: 0px;
+            margin-top: 48px; /* 与 logo 进行 48px 的间隔 */
             white-space: nowrap; 
             text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8); 
         }
         
-        /* 3. 用户名和密码标签左对齐并加粗 */
+        /* 4. 用户名和密码标签左对齐并加粗 */
         .stTextInput label {
             display: flex;
             justify-content: flex-start; 
@@ -103,7 +112,7 @@ def login_page():
             font-weight: bold;
         }
         
-        /* 4. 登录框（表单）美化：50%透明背景、毛玻璃效果、圆角、明显黑色悬浮阴影 */
+        /* 5. 登录框（表单）美化：50%透明背景、毛玻璃效果、圆角、明显黑色悬浮阴影 */
         /* 修改：限制最大宽度为 600px 并水平居中 */
         [data-testid="stForm"] {
             background-color: rgba(255, 255, 255, 0.5) !important; 
@@ -113,12 +122,12 @@ def login_page():
             padding: 40px;
             box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.6); /* 保持明显的黑色悬浮阴影 */
             border: 1px solid rgba(255, 255, 255, 0.4); /* 增强玻璃质感的淡白边 */
-            max-width: 600px; /* 限制最大宽度 */
+            max-width: 600px; /* 限制最大宽度为 600px */
             margin-left: auto; /* 水平居中 */
             margin-right: auto; /* 水平居中 */
         }
         
-        /* 🔥 5. 新增：按钮立体美化 & 颜色协调（蓝宝石色渐变） 🔥 */
+        /* 6. 新增：按钮立体美化 & 颜色协调（蓝宝石色渐变） */
         div[data-testid="stFormSubmitButton"] > button {
             /* 协调色：深蓝色渐变 */
             background-image: linear-gradient(180deg, #1E88E5 0%, #1565C0 100%) !important;
@@ -133,7 +142,7 @@ def login_page():
             font-size: 1.1rem !important;
             padding: 10px 24px !important;
             
-            /* 🔥 核心立体阴影：Y轴下移 5px 的暗蓝色阴影营造厚度 🔥 */
+            /* 核心立体阴影：Y轴下移 5px 的暗蓝色阴影营造厚度 */
             box-shadow: 0 5px 0 #0D47A1, 0 8px 15px rgba(0, 0, 0, 0.3) !important;
             
             /* 丝滑过渡反馈 */
@@ -146,7 +155,7 @@ def login_page():
             background-image: linear-gradient(180deg, #42A5F5 0%, #1976D2 100%) !important;
         }
         
-        /* 🔥 按钮点击/按下反馈：核心立体下沉效果 🔥 */
+        /* 按钮点击/按下反馈：核心立体下沉效果 */
         div[data-testid="stFormSubmitButton"] > button:active {
             /* 缩短阴影营造被按下的视觉 */
             box-shadow: 0 2px 0 #0D47A1, 0 4px 6px rgba(0, 0, 0, 0.3) !important;
@@ -157,22 +166,19 @@ def login_page():
     """, unsafe_allow_html=True)
 
     # === 第一部分：Logo与标题 ===
-    # 给标题分配更宽的空间（比例 1:4:1），彻底摆脱登录框的宽度限制
-    header_col1, header_col2, header_col3 = st.columns([1, 4, 1])
+    # 给标题分配更宽的空间（比例 1:6:1），彻底摆脱登录框的宽度限制
+    header_col1, header_col2, header_col3 = st.columns([1, 6, 1])
     with header_col2:
         logo_url = "https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/28827220.png"
         # 使用 HTML 统一渲染图片和标题，确保绝对居中且不换行
-        # 修改：Logo 图片宽度增大 2 倍（160px -> 320px），标题更新，Logo 与标题间距增加
-        # 修改：标题与登录框直接增加 48px 的间隔 (通过 login-title 的 margin-bottom 或整体容器的 margin-bottom 实现)
+        # 修改：Logo 图片宽度增大 2 倍（160px -> 320px），标题与登录框直接增加 48px 的间隔
+        # CSS 已经处理了 logo 与标题的 48px 间隔 (login-title 的 margin-top)
         st.markdown(f"""
-            <div style="text-align: center; margin-top: 2rem; margin-bottom: 48px;"> <img src="{logo_url}" width="320" style="margin-bottom: 20px; drop-shadow(0px 4px 6px rgba(0,0,0,0.2));" /> <div class='login-title'>实验试剂与耗材使用管理系统</div> </div>
+            <div style="text-align: center; margin-top: 2rem; margin-bottom: 48px;"> <img src="{logo_url}" width="320" style="margin-bottom: 0px; drop-shadow(0px 4px 6px rgba(0,0,0,0.2));" /> <div class='login-title'>实验试剂与耗材使用管理系统</div> </div>
         """, unsafe_allow_html=True)
 
     # === 第二部分：半透明高对比度登录框 ===
-    # 保持登录框宽度适中且居中（比例 1:1.2:1）
-    # 修改：不需要 col columns，CSS 已经处理了 max-width 和 centering
-    # col1, col2, col3 = st.columns([1, 1.2, 1])
-    # with col2:
+    # CSS 已经处理了 max-width 和 centering，不需要 columns 布局
     with st.form("login_form"):
         username = st.text_input("用户名")
         password = st.text_input("密码", type="password")
@@ -183,7 +189,8 @@ def login_page():
         btn_col1, btn_col2, btn_col3 = st.columns([1, 1.2, 1])
         with btn_col2:
             # use_container_width=True 让按钮铺满这一列
-            submit = st.form_submit_button("登录系统", use_container_width=True)
+            # 修改：按钮文本改成“登录”
+            submit = st.form_submit_button("登录", use_container_width=True)
         
         if submit:
             if username in USERS and USERS[username]["password"] == password:
@@ -323,6 +330,10 @@ def inventory_and_alert_module():
     inv_df = load_data(INV_FILE)
     
     if not inv_df.empty:
+        # 确保数据类型正确
+        inv_df["当前库存数量"] = pd.to_numeric(inv_df["当前库存数量"], errors='coerce')
+        inv_df["警戒阈值"] = pd.to_numeric(inv_df["警戒阈值"], errors='coerce')
+        
         alert_df = inv_df[inv_df["当前库存数量"] <= inv_df["警戒阈值"]]
         if not alert_df.empty:
             st.error("🚨 **库存告警公告板 (以下物资即将耗尽，请尽快采购！)**")
@@ -373,6 +384,7 @@ def inventory_and_alert_module():
             if st.button("确认覆盖导入"):
                 try:
                     upload_df = pd.read_csv(uploaded_file)
+                    # 可以在这里添加表头校验
                     save_data(upload_df, INV_FILE)
                     st.success("✅ 导入成功！界面将自动刷新。")
                     st.rerun()
