@@ -104,6 +104,7 @@ def login_page():
         }
         
         /* 4. 登录框（表单）美化：50%透明背景、毛玻璃效果、圆角、明显黑色悬浮阴影 */
+        /* 修改：限制最大宽度为 600px 并水平居中 */
         [data-testid="stForm"] {
             background-color: rgba(255, 255, 255, 0.5) !important; 
             backdrop-filter: blur(8px); /* 毛玻璃模糊滤镜 */
@@ -112,6 +113,9 @@ def login_page():
             padding: 40px;
             box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.6); /* 保持明显的黑色悬浮阴影 */
             border: 1px solid rgba(255, 255, 255, 0.4); /* 增强玻璃质感的淡白边 */
+            max-width: 600px; /* 限制最大宽度 */
+            margin-left: auto; /* 水平居中 */
+            margin-right: auto; /* 水平居中 */
         }
         
         /* 🔥 5. 新增：按钮立体美化 & 颜色协调（蓝宝石色渐变） 🔥 */
@@ -158,38 +162,38 @@ def login_page():
     with header_col2:
         logo_url = "https://hporhdgbqajajdbefynt.supabase.co/storage/v1/object/public/Zhongjia/28827220.png"
         # 使用 HTML 统一渲染图片和标题，确保绝对居中且不换行
+        # 修改：Logo 图片宽度增大 2 倍（160px -> 320px），标题更新，Logo 与标题间距增加
+        # 修改：标题与登录框直接增加 48px 的间隔 (通过 login-title 的 margin-bottom 或整体容器的 margin-bottom 实现)
         st.markdown(f"""
-            <div style="text-align: center; margin-top: 2rem;">
-                <img src="{logo_url}" width="160" style="margin-bottom: 10px; drop-shadow(0px 4px 6px rgba(0,0,0,0.2));" />
-                <div class='login-title'>实验试剂耗材及设备管理系统</div>
-            </div>
+            <div style="text-align: center; margin-top: 2rem; margin-bottom: 48px;"> <img src="{logo_url}" width="320" style="margin-bottom: 20px; drop-shadow(0px 4px 6px rgba(0,0,0,0.2));" /> <div class='login-title'>实验试剂与耗材使用管理系统</div> </div>
         """, unsafe_allow_html=True)
 
     # === 第二部分：半透明高对比度登录框 ===
     # 保持登录框宽度适中且居中（比例 1:1.2:1）
-    col1, col2, col3 = st.columns([1, 1.2, 1])
-    with col2:
-        with st.form("login_form"):
-            username = st.text_input("用户名")
-            password = st.text_input("密码", type="password")
-            
-            st.write("") # 留出少许间距
-            
-            # 使用列布局使“登录”按钮完美居中
-            btn_col1, btn_col2, btn_col3 = st.columns([1, 1.2, 1])
-            with btn_col2:
-                # use_container_width=True 让按钮铺满这一列
-                submit = st.form_submit_button("登录系统", use_container_width=True)
-            
-            if submit:
-                if username in USERS and USERS[username]["password"] == password:
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.session_state.user_info = USERS[username]
-                    st.success(f"登录成功！欢迎，{USERS[username]['name']}")
-                    st.rerun()
-                else:
-                    st.error("用户名或密码错误！")
+    # 修改：不需要 col columns，CSS 已经处理了 max-width 和 centering
+    # col1, col2, col3 = st.columns([1, 1.2, 1])
+    # with col2:
+    with st.form("login_form"):
+        username = st.text_input("用户名")
+        password = st.text_input("密码", type="password")
+        
+        st.write("") # 留出少许间距
+        
+        # 使用列布局使“登录”按钮完美居中
+        btn_col1, btn_col2, btn_col3 = st.columns([1, 1.2, 1])
+        with btn_col2:
+            # use_container_width=True 让按钮铺满这一列
+            submit = st.form_submit_button("登录系统", use_container_width=True)
+        
+        if submit:
+            if username in USERS and USERS[username]["password"] == password:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.user_info = USERS[username]
+                st.success(f"登录成功！欢迎，{USERS[username]['name']}")
+                st.rerun()
+            else:
+                st.error("用户名或密码错误！")
 
 # ==========================================
 # --- 模块1：采购登记入库 ---
